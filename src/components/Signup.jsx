@@ -3,9 +3,9 @@ export default function Signup() {
         event.preventDefault();
         // Handle signup logic here
         const formData = new FormData(event.target);
-        const acquisition = formData.getAll("acquisition");
+        const acquisitionChannel = formData.getAll("acquisition");
         const data = Object.fromEntries(formData.entries());
-        data.aquisition = acquisition;
+        data.aquisition = acquisitionChannel;
         console.log(data);
     }
     return (
