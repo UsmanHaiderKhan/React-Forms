@@ -1,45 +1,29 @@
-import {useState} from "react";
+import Input from "./Input.jsx";
+import {hasMinLength, isEmail, isNotEmpty}   from "../util/validation.js";
+import {useInput} from "../hooks/useInput.js";
 
 export default function LoginState() {
-    const [enteredValues, setEnteredValues] = useState({
-        email: "",
-        password: ""
-    });
-    const [didEdit, setDidEdit] = useState({
-        email: false,
-        password: false
-    });
-    const emailIsInvalid = didEdit.email && !enteredValues.email.includes("@") ;
+   const {value: emailValue, handleInputBlur: handleEmailBlur, handleInputChange: handleEmailChange, hasError: emailHasError} = useInput('', (value) => isEmail(value) && isNotEmpty(value));
+   const {value: passwordValue, handleInputBlur: handlePasswordBlur, handleInputChange: handlePasswordChange, hasError: passwordHasError} = useInput('', (value) => hasMinLength(value,7) );
+
 
     // const [enteredEmail, setEnteredEmail] = useState("");
     // const [enteredPassword, setEnteredPassword] = useState("");
     function  handleSubmit(event) {
         event.preventDefault();
         // Handle login logic here
-        console.log(enteredValues);
+        if (emailHasError || passwordHasError) {
+            console.log("Form has errors, please fix them before submitting.");
+            return;
+        }
+        console.log(emailValue, passwordValue);
         // Reset the form fields
         // setEnteredValues({
         //     email: "",
         //     password: ""
         // })
     }
-    function handleInputChange(identifier, value) {
-        // Handle input changes if needed
-        setEnteredValues((prevValues) => ({
-            ...prevValues,
-            [identifier]: value,
-        }));
-        setDidEdit((prevState) => ({
-            ...prevState,
-            [identifier]: false,
-        }));
-    }
-    function handleInputBlur(identifier) {
-        setDidEdit((prevState) => ({
-            ...prevState,
-            [identifier]: true,
-        }));
-    }
+
     // If you want to handle email/password input changes separately,
     // function handleEmailChange(event) {
     //     // Handle email input changes
@@ -51,19 +35,8 @@ export default function LoginState() {
       <h2>Login</h2>
 
       <div className="control-row">
-        <div className="control no-margin">
-          <label htmlFor="email">Email</label>
-          <input id="email" type="email" name="email" value={enteredValues.email} onBlur={()=> handleInputBlur('email')} onChange={(event) => handleInputChange('email', event.target.value)} />
-            <div className="control-error">
-                {emailIsInvalid && <p className="error-text">Please enter a valid email address.</p>}
-
-            </div>
-        </div>
-
-        <div className="control no-margin">
-          <label htmlFor="password">Password</label>
-          <input id="password" type="password" name="password" value={enteredValues.password} onChange={(event) => handleInputChange('password', event.target.value)} />
-        </div>
+          <Input label="Email" id="email" name="email" type="email" value={emailValue} onBlur={handleEmailBlur} onChange={handleEmailChange} errorMessage={emailHasError && 'Please Enter Valid Email Address.'} />
+          <Input label="Password" id="password" name="password" type="password" value={passwordValue} onBlur={()=> handlePasswordBlur} onChange={handlePasswordChange} errorMessage={passwordHasError && 'Please Enter a valid Password!'} />
       </div>
 
       <p className="form-actions">
