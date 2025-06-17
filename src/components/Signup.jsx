@@ -3,22 +3,26 @@ import {useState} from "react";
 export default function Signup() {
     const [passwordAreNotEqual, setPasswordAreNotEqual] = useState(false);
 
-    function handleSignupSubmit(event) {
-        event.preventDefault();
-        // Handle signup logic here
-        const formData = new FormData(event.target);
-        const acquisitionChannel = formData.getAll("acquisition");
-        const data = Object.fromEntries(formData.entries());
-        data.aquisition = acquisitionChannel;
-        if (data["password"] !== data["confirm-password"]) {
-            setPasswordAreNotEqual(true);
-            return;
-        }
-        console.log(data);
-    }
+    // function handleSignupSubmit(event) {
+    //     event.preventDefault();
+    //     // Handle signup logic here
+    //     const formData = new FormData(event.target);
+    //     const acquisitionChannel = formData.getAll("acquisition");
+    //     const data = Object.fromEntries(formData.entries());
+    //     data.aquisition = acquisitionChannel;
+    //     if (data["password"] !== data["confirm-password"]) {
+    //         setPasswordAreNotEqual(true);
+    //         return;
+    //     }
+    //     console.log(data);
+    // }
 
+    function signupAction(formData){
+        const email = formData.get("email");
+        console.log(`Email: ${email}`);
+    }
     return (
-        <form onSubmit={handleSignupSubmit} className="signup-form">
+        <form action={signupAction} className="signup-form">
             <h2>Welcome on board!</h2>
             <p>We just need a little bit of data from you to get you started 🚀</p>
 
