@@ -1,4 +1,5 @@
-import {useState} from "react";
+import {useState, useActionState} from "react";
+import {isEmail, isNotEmpty, hasMinLength, isEqualsToOtherValue} from "../util/validation.js";
 
 export default function Signup() {
     const [passwordAreNotEqual, setPasswordAreNotEqual] = useState(false);
@@ -17,24 +18,74 @@ export default function Signup() {
     //     console.log(data);
     // }
 
-    function signupAction(formData){
+    function signupAction(prevFormState,formData){
         const email = formData.get("email");
-        console.log(`Email: ${email}`);
+        const password = formData.get("password");
+        const confirmPassword = formData.get("confirm-password");
+        const firstName = formData.get("first-name");
+        const lastName = formData.get("last-name");
+        const role = formData.get("role");
+        const terms = formData.get("terms");
+        const acquisitionChannel = formData.getAll("acquisition");
+        let errors=[];
+        if(!isEmail(email)) {
+            errors.push("Email is not valid.");
+        }
+        if (!isNotEmpty(password) || !hasMinLength(password, 6)) {
+            errors.push("Password must be at least 6 characters long.");
+        }
+        if (!isEqualsToOtherValue(password, confirmPassword)) {
+            setPasswordAreNotEqual(true);
+            errors.push("Passwords do not match.");
+        }
+        if (!isNotEmpty(firstName)) {
+            errors.push("First name is required.");
+        }
+        if (!isNotEmpty(lastName)) {
+            errors.push("Last name is required.");
+        }
+        if (!isNotEmpty(role)) {
+            errors.push("Role is required.");
+        }
+        if (acquisitionChannel.length === 0) {
+            errors.push("You must select at least one acquisition channel.");
+        }
+        if (!terms) {
+            errors.push("You must agree to the terms and conditions.");
+        }
+        if (errors.length > 0) {
+            return{
+                errors,
+                enteredValues: {
+                    email,
+                    password,
+                    confirmPassword,
+                    firstName,
+                    lastName,
+                    role,
+                    acquisitionChannel,
+                    terms
+                }
+            }
+        }
+       return {errors: null};
     }
+    const [formState, formAction] = useActionState(signupAction,{errors:null});
+    
     return (
-        <form action={signupAction} className="signup-form">
+        <form action={formAction} className="signup-form">
             <h2>Welcome on board!</h2>
             <p>We just need a little bit of data from you to get you started 🚀</p>
 
             <div className="control">
                 <label htmlFor="email">Email</label>
-                <input id="email" type="email" name="email" required/>
+                <input id="email" type="email" name="email" defaultValue={formState.enteredValues?.email}/>
             </div>
 
             <div className="control-row">
                 <div className="control">
                     <label htmlFor="password">Password</label>
-                    <input id="password" type="password" name="password" required minLength={6}/>
+                    <input id="password" type="password" name="password"  minLength={6} defaultValue={formState.enteredValues?.password}/>
                 </div>
 
                 <div className="control">
@@ -43,7 +94,7 @@ export default function Signup() {
                         id="confirm-password"
                         type="password"
                         name="confirm-password"
-                        required
+                        defaultValue={formState.enteredValues?.confirmPassword}
                     />
                     <div className="control-error">
                         {passwordAreNotEqual && (
@@ -58,18 +109,18 @@ export default function Signup() {
             <div className="control-row">
                 <div className="control">
                     <label htmlFor="first-name">First Name</label>
-                    <input type="text" id="first-name" name="first-name" required/>
+                    <input type="text" id="first-name" name="first-name"  defaultValue={formState.enteredValues?.firstName}/>
                 </div>
 
                 <div className="control">
                     <label htmlFor="last-name">Last Name</label>
-                    <input type="text" id="last-name" name="last-name" required/>
+                    <input type="text" id="last-name" name="last-name"  defaultValue={formState.enteredValues?.lastName}/>
                 </div>
             </div>
 
             <div className="control">
                 <label htmlFor="phone">What best describes your role?</label>
-                <select id="role" name="role" required>
+                <select id="role" name="role" defaultValue={formState.enteredValues?.role}>
                     <option value="student">Student</option>
                     <option value="teacher">Teacher</option>
                     <option value="employee">Employee</option>
@@ -86,6 +137,7 @@ export default function Signup() {
                         id="google"
                         name="acquisition"
                         value="google"
+                        defaultChecked={formState.enteredValues?.acquisitionChannel.includes("google")}
                     />
                     <label htmlFor="google">Google</label>
                 </div>
@@ -96,23 +148,35 @@ export default function Signup() {
                         id="friend"
                         name="acquisition"
                         value="friend"
+                        defaultChecked={formState.enteredValues?.acquisitionChannel.includes("friend")}
                     />
                     <label htmlFor="friend">Referred by friend</label>
                 </div>
 
                 <div className="control">
-                    <input type="checkbox" id="other" name="acquisition" value="other"/>
+                    <input type="checkbox" id="other" name="acquisition" value="other" defaultChecked={formState.enteredValues?.acquisitionChannel.includes("other")}/>
                     <label htmlFor="other">Other</label>
+                    
                 </div>
             </fieldset>
 
             <div className="control">
                 <label htmlFor="terms-and-conditions">
-                    <input type="checkbox" id="terms-and-conditions" name="terms" required/>I
+                    <input type="checkbox" id="terms-and-conditions" name="terms"  defaultChecked={formState.enteredValues?.terms}/>I
                     agree to the terms and conditions
                 </label>
             </div>
+           <div>
+                {formState.errors && formState.errors.length > 0 && (
 
+                        <ul className="error">
+                            {formState.errors.map((error, index) => (
+                                <li key={error}>{error}</li>
+                            ))}
+                        </ul>
+
+                )}
+           </div>
             <p className="form-actions">
                 <button type="reset" className="button button-flat">
                     Reset
